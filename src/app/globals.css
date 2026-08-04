@@ -287,11 +287,11 @@ p.lede {
 }
 .brand small {
   font-family: var(--font-body);
-  font-weight: 400;
+  font-weight: 600;
   font-size: 10px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
   display: block;
   margin-top: 2px;
   white-space: nowrap;
@@ -1048,31 +1048,6 @@ button.showcase-card {
   color: var(--ink-faint);
   margin-top: 14px;
   text-align: center;
-}
-.form-error {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 12px 14px;
-  border: 1px solid var(--crimson-line);
-  border-radius: var(--radius-md);
-  background: var(--crimson-wash);
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--ink);
-}
-.form-error svg {
-  width: 18px;
-  height: 18px;
-  flex: none;
-  margin-top: 2px;
-  color: var(--crimson);
-}
-.form-error a {
-  color: var(--crimson);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 .form-success {
   text-align: center;
