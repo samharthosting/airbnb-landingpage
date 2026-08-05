@@ -231,16 +231,19 @@ p.lede {
     background 0.3s ease,
     box-shadow 0.3s ease;
 }
+/* Deeper and closer to opaque than the original rgba(20, 24, 28, 0.7): at 0.7 the
+   bright hero photo lifted the bar to ~#262a2d, which flattened the logo against
+   it. Keeps a little blur-through so it still reads as a glass bar. */
 @media (prefers-color-scheme: dark) {
   .site-header {
-    background: rgba(20, 24, 28, 0.7);
+    background: rgba(13, 16, 19, 0.93);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
     box-shadow: none;
   }
 }
 :root[data-theme="dark"] .site-header {
-  background: rgba(20, 24, 28, 0.7);
+  background: rgba(13, 16, 19, 0.93);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   box-shadow: none;
@@ -296,6 +299,17 @@ p.lede {
   margin-top: 2px;
   white-space: nowrap;
 }
+
+/* Narrow headers wrap the wordmark to "Hart" / "Hosting"; body's 1.65 line-height
+   left a ~31px gap between them, so tighten it where the wrap can happen. */
+@media (max-width: 560px) {
+  .brand {
+    line-height: 1.12;
+  }
+  .brand small {
+    margin-top: 5px;
+  }
+}
 @media (max-width: 480px) {
   .brand small {
     display: none;
@@ -342,6 +356,16 @@ nav.nav-list a:hover::after {
 .nav-toggle svg {
   width: 22px;
   height: 22px;
+}
+/* The toggle's 44px tap target already carries ~11px of optical padding, so the
+   22px flex gap reads as ~33px next to the CTA once space gets tight. */
+@media (max-width: 560px) {
+  .header-cta {
+    gap: 8px; /* keeps 8px between two adjacent tap targets */
+  }
+  .nav-toggle {
+    margin-right: -8px;
+  }
 }
 @media (max-width: 960px) {
   nav.nav-list {

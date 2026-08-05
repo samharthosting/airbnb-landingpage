@@ -46,7 +46,6 @@ export function Header() {
         </nav>
         <div className="header-cta">
           <Button
-            variant="outline"
             className="rounded-full h-auto px-6 py-2.5 text-sm"
             render={<a href="#assessment" />}
             nativeButton={false}
