@@ -4,68 +4,26 @@ import { Star } from "lucide-react";
 import { Reveal } from "../Reveal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
+import {
+  CATEGORY_RATINGS,
+  GUEST_REVIEWS,
+  LISTING_STATS,
+  type GuestReview,
+} from "@/lib/guest-reviews";
 
-type GuestReview = {
-  name: string;
-  subtitle: string;
-  rating: number;
-  date: string;
-  stay: string;
-  quote: string;
-  photo?: string;
-};
-
-const GUEST_REVIEWS: GuestReview[] = [
-  {
-    name: "Nabil",
-    subtitle: "Surrey, Canada",
-    rating: 5,
-    date: "June 2026",
-    stay: "Stayed with kids",
-    quote:
-      "Great place to stay, Sam is friendly and accommodating and was proactive in offering assistance since we were moving. The place is pristine clean, cozy and the bed in the living room is comfortable to sleep on. There's a portable heater if it gets cold at nights during summer. The master bedroom is nicely tucked away and extremely cozy. The mattress is fabulous!\n\nThank you Sam for having us!",
-    photo: "/Nabil.avif",
-  },
-  {
-    name: "Bob",
-    subtitle: "Edmonton, Canada",
-    rating: 5,
-    date: "2 weeks ago",
-    stay: "Stayed a few nights",
-    quote:
-      "My family enjoyed our stay at Sam's Airbnb in Surrey. Very nice and comfortable place. Sam responded quickly to any questions. We would definitely stay again if we visit Surrey. Thanks",
-    photo: "/Bob.avif",
-  },
-  {
-    name: "Satyen",
-    subtitle: "10 years on Airbnb",
-    rating: 5,
-    date: "June 2026",
-    stay: "Stayed one night",
-    quote:
-      "Sam's apartment is nice and comfortable. He is a great communicator and made sure that our stay was pleasant. The apartment is well appointed and carefully and caringly furnished. We had everything we needed and more. The neighborhood is nice. We would love to stay there again. Thank you, Sam!",
-    photo: "/Satyen.avif",
-  },
-  {
-    name: "Iryna",
-    subtitle: "Winnipeg, Canada",
-    rating: 5,
-    date: "June 2026",
-    stay: "Stayed with kids",
-    quote:
-      "We had a wonderful stay! The place was clean, comfortable, and exactly as described. The host was friendly, responsive, and made the check-in process very easy. We would definitely stay here again and highly recommend it to others.",
-    photo: "/Iryna.avif",
-  },
-];
+// Split into two rows so the full set stays browsable instead of one very long loop.
+const midpoint = Math.ceil(GUEST_REVIEWS.length / 2);
+const ROW_ONE = GUEST_REVIEWS.slice(0, midpoint);
+const ROW_TWO = GUEST_REVIEWS.slice(midpoint);
 
 function ReviewCard({ review }: { review: GuestReview }) {
-  const { name, subtitle, rating, date, stay, quote, photo } = review;
+  const { name, subtitle, rating, date, quote, photo } = review;
 
   return (
     <figure className="flex h-full flex-col gap-4 border border-border bg-card px-7 pt-7 pb-6 shadow-xs">
       <figcaption className="flex items-center gap-3">
         <Avatar size="lg">
-          {photo && <AvatarImage src={photo} alt={name} />}
+          {photo && <AvatarImage src={photo} alt={name} loading="lazy" />}
           <AvatarFallback className="bg-muted font-heading font-bold text-primary">
             {name.charAt(0)}
           </AvatarFallback>
@@ -83,10 +41,9 @@ function ReviewCard({ review }: { review: GuestReview }) {
         </div>
         <span aria-hidden="true">&middot;</span>
         <span>{date}</span>
-        <span aria-hidden="true">&middot;</span>
-        <span>{stay}</span>
       </div>
-      <blockquote className="flex-1 text-[15px] leading-relaxed whitespace-pre-line text-muted-foreground">
+      {/* Clamped so one long review can't stretch every card in the row. */}
+      <blockquote className="line-clamp-[6] flex-1 overflow-hidden text-[15px] leading-relaxed whitespace-pre-line text-muted-foreground">
         {quote}
       </blockquote>
     </figure>
@@ -103,14 +60,58 @@ export function GuestReviews() {
             Real feedback from guests who&apos;ve stayed at The Hart House on Airbnb.
           </p>
         </Reveal>
-        <Reveal as="div" className="mt-14">
+        <Reveal as="div" className="review-summary">
+          <div className="review-summary-score">
+            <span className="review-summary-num">{LISTING_STATS.rating}</span>
+            <div className="review-summary-stars" aria-hidden="true">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="size-4 fill-(--gold) text-(--gold)" />
+              ))}
+            </div>
+            <span className="review-summary-caption">
+              Guest Favorite &middot; {LISTING_STATS.totalReviews} reviews
+            </span>
+          </div>
+          <dl className="review-summary-cats">
+            {CATEGORY_RATINGS.map(({ label, value }) => (
+              <div key={label} className="review-cat">
+                <div className="review-cat-head">
+                  <dt>{label}</dt>
+                  <dd>{value.toFixed(1)}</dd>
+                </div>
+                <div className="review-cat-track">
+                  <span style={{ width: `${(value / 5) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </dl>
+        </Reveal>
+        <Reveal as="div" className="mt-14 flex flex-col gap-6">
           <InfiniteMovingCards
-            items={GUEST_REVIEWS}
+            items={ROW_ONE}
             renderItem={(review) => <ReviewCard review={review} />}
             cardClassName="w-[320px] sm:w-[380px]"
             speed="slow"
             gap={24}
           />
+          <InfiniteMovingCards
+            items={ROW_TWO}
+            renderItem={(review) => <ReviewCard review={review} />}
+            cardClassName="w-[320px] sm:w-[380px]"
+            direction="right"
+            speed="slow"
+            gap={24}
+          />
+        </Reveal>
+        <Reveal as="div" className="mt-11 flex justify-center">
+          <a
+            className="text-sm font-semibold text-primary underline underline-offset-4"
+            href={LISTING_STATS.listingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Read all reviews on Airbnb
+          </a>
         </Reveal>
       </div>
     </section>

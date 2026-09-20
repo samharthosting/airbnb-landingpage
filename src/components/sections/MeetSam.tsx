@@ -11,7 +11,7 @@ export function MeetSam() {
         <div className="about-grid">
           <Reveal className="about-photo">
             <Image
-              src="/unnamed.jpg"
+              src="/ceo.png"
               alt="Sam, founder of Hart Hosting"
               fill
               sizes="(max-width: 860px) 100vw, 40vw"

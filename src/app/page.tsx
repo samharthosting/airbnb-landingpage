@@ -11,7 +11,6 @@ import { Showcase } from "@/components/sections/Showcase";
 import { Services } from "@/components/sections/Services";
 import { WhyHartHosting } from "@/components/sections/WhyHartHosting";
 import { Assessment } from "@/components/sections/Assessment";
-import { ProvenResults } from "@/components/sections/ProvenResults";
 import { GuestReviews } from "@/components/sections/GuestReviews";
 import { Faq } from "@/components/sections/Faq";
 import { Contact } from "@/components/sections/Contact";
@@ -27,12 +26,11 @@ export default function Home() {
         <WhyShortTermRentals />
         <HowItWorks />
         <MeetSam />
+        <GuestReviews />
         <Showcase />
-        <ProvenResults />
         <Services />
         <WhyHartHosting />
         <Assessment />
-        <GuestReviews />
         <Faq />
         <Contact />
       </main>
