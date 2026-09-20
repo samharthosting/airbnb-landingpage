@@ -1040,89 +1040,30 @@ button.showcase-card {
 /* Guest Reviews - rating summary */
 .review-summary {
   margin-top: 48px;
-  display: grid;
-  grid-template-columns: minmax(180px, auto) 1fr;
-  gap: 56px;
-  align-items: center;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 36px 0;
-}
-.review-summary-score {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 40px 0;
 }
 .review-summary-num {
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: clamp(44px, 6vw, 60px);
+  font-size: clamp(48px, 7vw, 68px);
   line-height: 1;
   color: var(--crimson);
 }
 .review-summary-stars {
   display: flex;
-  gap: 3px;
+  gap: 4px;
 }
 .review-summary-caption {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink-soft);
   text-align: center;
-}
-.review-summary-cats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px 40px;
-  margin: 0;
-}
-.review-cat-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-.review-cat-head dt {
-  font-size: 14px;
-  color: var(--ink-soft);
-}
-.review-cat-head dd {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 15px;
-  color: var(--ink);
-}
-.review-cat-track {
-  margin-top: 7px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
-}
-.review-cat-track span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--gold);
-}
-@media (max-width: 900px) {
-  .review-summary {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    justify-items: center;
-  }
-  .review-summary-cats {
-    width: 100%;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px 32px;
-  }
-}
-@media (max-width: 520px) {
-  .review-summary-cats {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Assessment */

@@ -4,12 +4,7 @@ import { Star } from "lucide-react";
 import { Reveal } from "../Reveal";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
-import {
-  CATEGORY_RATINGS,
-  GUEST_REVIEWS,
-  LISTING_STATS,
-  type GuestReview,
-} from "@/lib/guest-reviews";
+import { GUEST_REVIEWS, LISTING_STATS, type GuestReview } from "@/lib/guest-reviews";
 
 // Split into two rows so the full set stays browsable instead of one very long loop.
 const midpoint = Math.ceil(GUEST_REVIEWS.length / 2);
@@ -61,30 +56,13 @@ export function GuestReviews() {
           </p>
         </Reveal>
         <Reveal as="div" className="review-summary">
-          <div className="review-summary-score">
-            <span className="review-summary-num">{LISTING_STATS.rating}</span>
-            <div className="review-summary-stars" aria-hidden="true">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="size-4 fill-(--gold) text-(--gold)" />
-              ))}
-            </div>
-            <span className="review-summary-caption">
-              Guest Favorite &middot; {LISTING_STATS.totalReviews} reviews
-            </span>
-          </div>
-          <dl className="review-summary-cats">
-            {CATEGORY_RATINGS.map(({ label, value }) => (
-              <div key={label} className="review-cat">
-                <div className="review-cat-head">
-                  <dt>{label}</dt>
-                  <dd>{value.toFixed(1)}</dd>
-                </div>
-                <div className="review-cat-track">
-                  <span style={{ width: `${(value / 5) * 100}%` }} />
-                </div>
-              </div>
+          <span className="review-summary-num">{LISTING_STATS.rating}+</span>
+          <div className="review-summary-stars" aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="size-4 fill-(--gold) text-(--gold)" />
             ))}
-          </dl>
+          </div>
+          <span className="review-summary-caption">30+ Five-Star Reviews</span>
         </Reveal>
         <Reveal as="div" className="mt-14 flex flex-col gap-6">
           <InfiniteMovingCards
