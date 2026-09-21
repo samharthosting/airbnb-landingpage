@@ -92,6 +92,8 @@ export function AssessmentForm() {
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
 
   function updateField<K extends keyof FormValues>(field: K, value: FormValues[K]) {
@@ -110,10 +112,10 @@ export function AssessmentForm() {
     setErrors((prev) => ({ ...prev, [field]: validateField(field, values) }));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (honeypot) return;
+    if (honeypot || isSubmitting) return;
 
     const nextErrors: Partial<Record<FieldName, string>> = {};
     for (const field of VALIDATABLE_FIELDS) {
@@ -130,9 +132,33 @@ export function AssessmentForm() {
       return;
     }
 
-    // TODO: wire this up to a real endpoint (e.g. an API route or form service)
-    // to email/store submissions before launch.
-    setIsSubmitted(true);
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/assessment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...values, company: honeypot }),
+      });
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.ok) {
+        // Only show success once the request has actually been sent.
+        setSubmitError(
+          result?.error ?? "We couldn't send that just now. Please try again shortly.",
+        );
+        return;
+      }
+
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError(
+        "We couldn't reach the server. Please check your connection and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const isRequired = (field: FieldName) => REQUIRED_FIELDS.includes(field);
@@ -312,8 +338,18 @@ export function AssessmentForm() {
               }}
             />
 
-            <Button type="submit" className="w-full rounded-full h-auto px-8 py-4 text-sm">
-              Request My Free Assessment
+            {submitError && (
+              <p role="alert" className="text-center text-sm font-medium text-destructive">
+                {submitError}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-full h-auto px-8 py-4 text-sm"
+            >
+              {isSubmitting ? "Sending..." : "Request My Free Assessment"}
             </Button>
             <FieldDescription className="text-center font-semibold text-foreground">
               Every assessment is personally prepared by me.
