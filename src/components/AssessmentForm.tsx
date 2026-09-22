@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, CircleAlert, LoaderCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -20,6 +20,12 @@ import {
   FieldGroup,
   FieldLabel,
 } from "./ui/field";
+import {
+  ASSESSMENT_FIELDS,
+  validateAssessmentField as validateField,
+  type AssessmentFieldName,
+  type AssessmentRequest,
+} from "@/lib/assessment-request";
 
 const PROPERTY_TYPES: { label: string; value: string | null }[] = [
   { label: "Select one", value: null },
@@ -30,16 +36,7 @@ const PROPERTY_TYPES: { label: string; value: string | null }[] = [
   { label: "Other", value: "Other" },
 ];
 
-type FormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  propertyType: string | null;
-  bedrooms: string;
-  bathrooms: string;
-  notes: string;
-};
+type FormValues = AssessmentRequest;
 
 const INITIAL_VALUES: FormValues = {
   name: "",
@@ -52,48 +49,19 @@ const INITIAL_VALUES: FormValues = {
   notes: "",
 };
 
-type FieldName = "name" | "email" | "phone" | "address" | "bedrooms" | "bathrooms";
+type FieldName = AssessmentFieldName;
 
-function validateField(field: FieldName, values: FormValues): string | undefined {
-  switch (field) {
-    case "name":
-      return values.name.trim() ? undefined : "Please enter your full name.";
-    case "email": {
-      const email = values.email.trim();
-      if (!email) return "Please enter your email address.";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return "Please enter a valid email address.";
-      }
-      return undefined;
-    }
-    case "phone": {
-      const digits = values.phone.replace(/\D/g, "");
-      if (!digits) return "Please enter your phone number.";
-      if (digits.length < 10) return "Please enter a valid 10-digit phone number.";
-      return undefined;
-    }
-    case "address":
-      return values.address.trim() ? undefined : "Please enter the property address.";
-    case "bedrooms":
-      if (!values.bedrooms) return undefined;
-      return Number(values.bedrooms) >= 0 ? undefined : "Must be zero or more.";
-    case "bathrooms":
-      if (!values.bathrooms) return undefined;
-      return Number(values.bathrooms) >= 0 ? undefined : "Must be zero or more.";
-    default:
-      return undefined;
-  }
-}
+const FALLBACK_ERROR = "Your request didn't send.";
 
 const REQUIRED_FIELDS: FieldName[] = ["name", "email", "phone", "address"];
-const VALIDATABLE_FIELDS: FieldName[] = ["name", "email", "phone", "address", "bedrooms", "bathrooms"];
+const VALIDATABLE_FIELDS = ASSESSMENT_FIELDS;
 
 export function AssessmentForm() {
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
 
   function updateField<K extends keyof FormValues>(field: K, value: FormValues[K]) {
@@ -112,10 +80,24 @@ export function AssessmentForm() {
     setErrors((prev) => ({ ...prev, [field]: validateField(field, values) }));
   }
 
+  const FIELD_IDS: Record<FieldName, string> = {
+    name: "f-name",
+    email: "f-email",
+    phone: "f-phone",
+    address: "f-address",
+    bedrooms: "f-beds",
+    bathrooms: "f-baths",
+  };
+
+  function focusFirstInvalid(fieldErrors: Partial<Record<FieldName, string>>) {
+    const firstInvalid = VALIDATABLE_FIELDS.find((field) => fieldErrors[field]);
+    if (firstInvalid) document.getElementById(FIELD_IDS[firstInvalid])?.focus();
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (honeypot || isSubmitting) return;
+    if (honeypot || isSending) return;
 
     const nextErrors: Partial<Record<FieldName, string>> = {};
     for (const field of VALIDATABLE_FIELDS) {
@@ -125,15 +107,12 @@ export function AssessmentForm() {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      const firstInvalid = VALIDATABLE_FIELDS.find((field) => nextErrors[field]);
-      if (firstInvalid) {
-        document.getElementById(`f-${firstInvalid}`)?.focus();
-      }
+      focusFirstInvalid(nextErrors);
       return;
     }
 
-    setSubmitError(null);
-    setIsSubmitting(true);
+    setSendError(null);
+    setIsSending(true);
 
     try {
       const response = await fetch("/api/assessment", {
@@ -141,23 +120,26 @@ export function AssessmentForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...values, company: honeypot }),
       });
-      const result = await response.json().catch(() => null);
 
-      if (!response.ok || !result?.ok) {
-        // Only show success once the request has actually been sent.
-        setSubmitError(
-          result?.error ?? "We couldn't send that just now. Please try again shortly.",
-        );
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string; errors?: Partial<Record<FieldName, string>> }
+        | null;
+
+      if (!response.ok) {
+        if (result?.errors) {
+          setErrors(result.errors);
+          focusFirstInvalid(result.errors);
+          return;
+        }
+        setSendError(result?.error ?? FALLBACK_ERROR);
         return;
       }
 
       setIsSubmitted(true);
     } catch {
-      setSubmitError(
-        "We couldn't reach the server. Please check your connection and try again.",
-      );
+      setSendError(FALLBACK_ERROR);
     } finally {
-      setIsSubmitting(false);
+      setIsSending(false);
     }
   }
 
@@ -338,18 +320,30 @@ export function AssessmentForm() {
               }}
             />
 
-            {submitError && (
-              <p role="alert" className="text-center text-sm font-medium text-destructive">
-                {submitError}
-              </p>
+            {sendError && (
+              <div className="form-error" role="alert">
+                <CircleAlert />
+                <p>
+                  {sendError} You can also call{" "}
+                  <a href="tel:+16049964541">(604) 996-4541</a> or email{" "}
+                  <a href="mailto:sam@harthosting.ca">sam@harthosting.ca</a>.
+                </p>
+              </div>
             )}
 
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSending}
               className="w-full rounded-full h-auto px-8 py-4 text-sm"
             >
-              {isSubmitting ? "Sending..." : "Request My Free Assessment"}
+              {isSending ? (
+                <>
+                  <LoaderCircle className="animate-spin" />
+                  Sending…
+                </>
+              ) : (
+                "Request My Free Assessment"
+              )}
             </Button>
             <FieldDescription className="text-center font-semibold text-foreground">
               Every assessment is personally prepared by me.
